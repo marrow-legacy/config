@@ -1,0 +1,3 @@
+h2. Pulp Configuration
+
+This package provides many useful additions to the YAML syntax in order to aid its use as an application configuration system.
