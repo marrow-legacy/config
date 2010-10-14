@@ -1,0 +1,9 @@
+version: 1
+
+server:
+    use: python:web.server.http
+    host: ["127.0.0.1", "::1"]
+    port: [80, 447]
+
+mapping:
+    /: config:foo
