@@ -29,7 +29,7 @@ if sys.version_info >= (3,0):
 else:
     from __builtin__ import execfile
 
-execfile(os.path.join("pulp", "config", "release.py"), globals(), locals())
+execfile(os.path.join("marrow", "config", "release.py"), globals(), locals())
 
 
 
@@ -46,7 +46,7 @@ setup(
         license = license,
         keywords = '',
         
-        install_requires = ['pulp.util', 'PyYAML'],
+        install_requires = ['marrow.util', 'PyYAML'],
         
         test_suite = 'nose.collector',
         tests_require = ['nose', 'coverage', 'nose-achievements'],
@@ -69,5 +69,5 @@ setup(
             },
         zip_safe = True,
         
-        namespace_packages = ['pulp'],
+        namespace_packages = ['marrow'],
     )

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import sys, os
-from pulp.config import release
+from marrow.config import release
 
 # sys.path.append(os.path.abspath('../'))
 
@@ -57,7 +57,7 @@ html_theme_path = ['tools/themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Pulp Configuration %s Documentation" % (version, )
+html_title = "Marrow Configuration %s Documentation" % (version, )
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -108,7 +108,7 @@ html_split_index = False
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pulp.config-doc'
+htmlhelp_basename = 'marrow.config-doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -122,7 +122,7 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'pulp.config.tex', u'Pulp Configuration Documentation', u'Alice Bevan-McGregor', 'manual'),
+  ('index', 'marrow.config.tex', u'Marrow Configuration Documentation', u'Alice Bevan-McGregor', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
