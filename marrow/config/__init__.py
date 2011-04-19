@@ -11,8 +11,8 @@ from yaml.resolver import Resolver
 
 from decimal import Decimal
 
-from pulp.util.compat import unicode
-from pulp.util.bunch import Bunch
+from marrow.util.compat import unicode
+from marrow.util.bunch import Bunch
 
 
 class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
