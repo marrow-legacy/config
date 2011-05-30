@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from marrow.util.compat import unicode
 from marrow.util.bunch import Bunch
+from marrow.util.object import load_object
 
 
 class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
@@ -52,6 +53,10 @@ class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
         value = self.construct_mapping(node)
         data.update(value)
     
+    def construct_python_object(self, node):
+        value = str(self.construct_scalar(node))
+        return load_object(value)
+    
     def construct_yaml_decimal(self, node):
         value = str(self.construct_scalar(node)).replace('_', '').lower()
         sign = +1
@@ -81,9 +86,9 @@ class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
         return self.represent_scalar('tag:yaml.org,2002:str', data)
 
 
+Configuration.add_constructor(unicode('tag:yaml.org,2002:python/object'), Configuration.construct_python_object)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:map'), Configuration.construct_yaml_bunch)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:python/dict'), Configuration.construct_yaml_bunch)
-
 Configuration.add_constructor(unicode('tag:yaml.org,2002:float'), Configuration.construct_yaml_decimal)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:python/float'), Configuration.construct_yaml_decimal)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:python/Decimal'), Configuration.construct_yaml_decimal)
