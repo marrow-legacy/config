@@ -1,55 +1,45 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys, os
-
-try:
-    from distribute_setup import use_setuptools
-    use_setuptools()
-
-except ImportError:
-    pass
+import os
+import sys
 
 from setuptools import setup, find_packages
 
 
-if sys.version_info <= (2, 5):
-    raise SystemExit("Python 2.5 or later is required.")
+if sys.version_info < (2, 6):
+    raise SystemExit("Python 2.6 or later is required.")
 
-if sys.version_info >= (3,0):
-    def execfile(filename, globals_=None, locals_=None):
-        if globals_ is None:
-            globals_ = globals()
-        
-        if locals_ is None:
-            locals_ = globals_
-        
-        exec(compile(open(filename).read(), filename, 'exec'), globals_, locals_)
-
-else:
-    from __builtin__ import execfile
-
-execfile(os.path.join("marrow", "config", "release.py"), globals(), locals())
+exec(open(os.path.join("marrow", "config", "release.py")))
 
 
 
 setup(
-        name = name,
+        name = "marrow.config",
         version = version,
         
-        description = summary,
-        long_description = description,
-        author = author,
-        author_email = email,
-        url = url,
-        download_url = download_url,
-        license = license,
-        keywords = '',
+        description = """""", # TODO: Prior to release.
+        long_description = """\
+For full documentation, see the README.textile file present in the package,
+or view it online on the GitHub project page:
+
+https://github.com/marrow/marrow.config""",
         
-        install_requires = ['marrow.util', 'PyYAML'],
+        author = "Alice Bevan-McGregor",
+        author_email = "alice+marrow@gothcandy.com",
+        url = "https://github.com/marrow/marrow.wsgi.objects",
+        license = "MIT",
+        
+        install_requires = [
+            'marrow.util < 2.0',
+            'PyYAML'
+        ],
         
         test_suite = 'nose.collector',
-        tests_require = ['nose', 'coverage', 'nose-achievements'],
+        tests_require = [
+            'nose',
+            'coverage'
+        ],
         
         classifiers = [
                 "Development Status :: 4 - Beta",
@@ -61,12 +51,9 @@ setup(
                 "Topic :: Software Development :: Libraries :: Python Modules"
             ],
         
-        packages = find_packages(exclude=['tests', 'tests.*', 'docs']),
+        packages = find_packages(exclude=['examples', 'tests']),
         include_package_data = True,
-        package_data = {
-                '': ['Makefile', 'README.textile', 'LICENSE', 'distribute_setup.py'],
-                'docs': ['source/*']
-            },
+        package_data = {'': ['README.textile', 'LICENSE']},
         zip_safe = True,
         
         namespace_packages = ['marrow'],
