@@ -49,9 +49,14 @@ class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
     
     def construct_yaml_bunch(self, node):
         data = Bunch()
-        yield data
         value = self.construct_mapping(node)
         data.update(value)
+        
+        if 'use' in data:
+            cls = load_object(data.pop('use'))
+            data = cls(**data)
+        
+        yield data
     
     def construct_python_object(self, node):
         value = str(self.construct_scalar(node))
@@ -86,7 +91,7 @@ class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
         return self.represent_scalar('tag:yaml.org,2002:str', data)
 
 
-Configuration.add_constructor(unicode('tag:yaml.org,2002:python/object'), Configuration.construct_python_object)
+Configuration.add_constructor(unicode('tag:yaml.org,2002:obj'), Configuration.construct_python_object)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:map'), Configuration.construct_yaml_bunch)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:python/dict'), Configuration.construct_yaml_bunch)
 Configuration.add_constructor(unicode('tag:yaml.org,2002:float'), Configuration.construct_yaml_decimal)
