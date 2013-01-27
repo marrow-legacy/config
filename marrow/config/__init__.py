@@ -1,100 +1,61 @@
 # encoding: utf-8
 
-import yaml
-from yaml.reader import Reader
-from yaml.scanner import Scanner
-from yaml.parser import Parser
-from yaml.composer import Composer
-from yaml.dumper import Dumper
-from yaml.constructor import Constructor
-from yaml.resolver import Resolver
+from __future__ import unicode_literals
 
+import os
 from decimal import Decimal
 
+import yaml
+from yaml.loader import Loader
+from yaml.dumper import Dumper
+from yaml.nodes import ScalarNode, SequenceNode
+from yaml.constructor import ConstructorError
 from marrow.util.compat import unicode
 from marrow.util.bunch import Bunch
-from marrow.util.object import load_object
 
 
-class Configuration(Reader, Scanner, Parser, Composer, Constructor, Resolver):
-    class Dumper(Dumper):
-        pass
-    
-    def __init__(self, stream):
-        Reader.__init__(self, stream)
-        Scanner.__init__(self)
-        Parser.__init__(self)
-        Composer.__init__(self)
-        Constructor.__init__(self)
-        Resolver.__init__(self)
-    
-    @classmethod
-    def load(cls, src):
-        return yaml.load(src, Loader=cls)
-    
-    def dump(self, destination=None):
-        """Default to block-style collections."""
-        
-        return yaml.dump(
-                self,
-                destination,
-                default_flow_style = False,
-                indent = 4,
-                Dumper = self.__class__
-            )
-    
-    #def construct_mapping(self, node, deep=False):
-    #    source = Constructor.construct_mapping(self, node, deep)
-    #    return Bunch(source)
-    
-    def construct_yaml_bunch(self, node):
-        data = Bunch()
+class Configuration(Loader):
+    def construct_bunch(self, node):
         value = self.construct_mapping(node)
+        data = Bunch()
         data.update(value)
-        
-        if 'use' in data:
-            cls = load_object(data.pop('use'))
-            data = cls(**data)
-        
-        yield data
+        return data
     
-    def construct_python_object(self, node):
-        value = str(self.construct_scalar(node))
-        return load_object(value)
+    def construct_env(self, node):
+        key = unicode(self.construct_scalar(node))
+        return os.environ[key]
     
-    def construct_yaml_decimal(self, node):
-        value = str(self.construct_scalar(node)).replace('_', '').lower()
-        sign = +1
-        
-        if value[0] == '-': sign = -1
-        if value[0] in '+-': value = value[1:]
-        
-        if value == '.inf':
-            value = 'Infinity'
-        
-        elif value == '.nan':
-            value = "NaN"
-        
-        elif ':' in value:
-            digits = [Decimal(part) for part in value.split(':')]
-            digits.reverse()
-            base = 1
-            value = 0.0
-            for digit in digits:
-                value += digit * base
-                base *= 60
-            return sign * value
-        
-        return sign * Decimal(value)
+    def construct_relative(self, node):
+        if not hasattr(self.stream, 'name'):
+            raise ConstructorError(None, None, 'stream has no associated filename, cannot determine base directory',
+                    node.start_mark)
+
+        basedir = os.path.dirname(self.stream.name)
+        path = str(self.construct_scalar(node))
+        return os.path.join(basedir, path)
     
+    def construct_decimal(self, node):
+        value = unicode(self.construct_scalar(node))
+        return Decimal(value)
+
+
+class Dumper(Dumper):
     def represent_decimal(self, data):
-        return self.represent_scalar('tag:yaml.org,2002:str', data)
+        return self.represent_scalar('!decimal', unicode(data))
 
 
-Configuration.add_constructor(unicode('tag:yaml.org,2002:obj'), Configuration.construct_python_object)
-Configuration.add_constructor(unicode('tag:yaml.org,2002:map'), Configuration.construct_yaml_bunch)
-Configuration.add_constructor(unicode('tag:yaml.org,2002:python/dict'), Configuration.construct_yaml_bunch)
-Configuration.add_constructor(unicode('tag:yaml.org,2002:float'), Configuration.construct_yaml_decimal)
-Configuration.add_constructor(unicode('tag:yaml.org,2002:python/float'), Configuration.construct_yaml_decimal)
-Configuration.add_constructor(unicode('tag:yaml.org,2002:python/Decimal'), Configuration.construct_yaml_decimal)
-Configuration.Dumper.add_representer(Decimal, Configuration.represent_decimal)
+def load(src, Loader=Configuration):
+    return yaml.load(src, Loader=Loader)
+
+
+def dump(data, stream=None, dumper=Dumper, **kwds):
+    kwds.setdefault('default_flow_style', False)
+    kwds.setdefault('indent', 4)
+    return yaml.dump(data, stream, dumper, **kwds)
+
+
+Configuration.add_constructor('tag:yaml.org,2002:map', Configuration.construct_bunch)
+Configuration.add_constructor('!env', Configuration.construct_env)
+Configuration.add_constructor('!relative', Configuration.construct_relative)
+Configuration.add_constructor('!decimal', Configuration.construct_decimal)
+Dumper.add_representer(Decimal, Dumper.represent_decimal)
